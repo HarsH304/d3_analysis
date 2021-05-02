@@ -1,0 +1,1501 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3-scale-radial.js"></script>
+    
+    <title>Air Traffic Dashboard</title>
+
+    <style>
+        .tooltip1 {
+            position: absolute;
+            text-align: center;
+            max-width: 200px;
+            max-height: 60px;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            margin-top: -30px;
+            font: 10px sans-serif;
+            background: black;
+            color: white;
+            pointer-events: none;
+        }
+    </style>
+
+</head>
+
+<body style="background-color: #eff8ff;">
+  <div style="background-color: #0d4168;text-align: center;">
+    <strong style="color: #eff8ff;font-size: 30px;">Air Traffic Dashboard</strong><hr>
+
+  <div style="background-color: #0d4168;"></div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
+
+    <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist" style="font-style: bold; margin-left: auto; margin-top: 0px; background-color: #0d4168;">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="1st-tab" data-toggle="tab" href="#chart_1" role="tab" aria-controls="Chart1" aria-selected="true" style="color: #30c09c;">
+              <b>Quarter Wise</b></a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="2nd-tab" data-toggle="tab" href="#chart_2" role="tab" aria-controls="Chart2" aria-selected="false" style="color: #30c09c;">
+              <b>Month Wise</b></a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="3rd-tab" data-toggle="tab" href="#chart_3" role="tab" aria-controls="Chart3" aria-selected="false" style="color: #30c09c;">
+              <b>Country Wise</b></a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="4th-tab" data-toggle="tab" href="#chart_4" role="tab" aria-controls="Chart4" aria-selected="false" style="color: #30c09c;">
+              <b>City Wise</b></a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="6th-tab" data-toggle="tab" href="#chart_6" role="tab" aria-controls="Chart6" aria-selected="false" style="color: #30c09c;">
+              <b>Airline Wise</b></a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="5th-tab" data-toggle="tab" href="#chart_5" role="tab" aria-controls="Chart5" aria-selected="false" style="color: #30c09c;">
+              <b>Top Airlines</b></a>
+        </li>
+    </ul>
+    </div>
+
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="chart_1" role="tabpanel" aria-labelledby="1st-tab">
+
+            <!-- Add 4 buttons -->
+            <div style="text-align:center; margin-top:15px;">
+                <button id="btn1" class="btn btn-info">q1</button>
+                <button id="btn2" class="btn btn-info" style="margin-left:15px;">q2</button>
+                <button id="btn3" class="btn btn-info" style="margin-left:15px;">q3</button>
+                <button id="btn4" class="btn btn-info" style="margin-left:15px;">q4</button>
+            </div>
+
+            <div id="bar_chart_1" style="width:800px;height:600px; text-align:center; margin-top:25px; display:inline;"></div>
+            <div id="bar_chart_2" style="width:800px;height:600px; text-align:center; margin-top:25px; display:inline;"></div>
+
+            <div style="width:950px; text-align:center;display:inline-block;"><b>2k15 Freight</b></div>
+            <div style="width:950px; text-align:center;display:inline-block;"><b>2k16 Freight</b></div>
+
+            <script type="text/javascript">
+                // d3.csv("https://raw.githubusercontent.com/HarsH304/d3_analysis/main/freightwise-2k15-16.csv", function(data) {
+
+                d3.csv("http://127.0.0.1:8887/freightwise-2k15-16.csv", function(data) {
+
+                    var data1 = [{
+                        group: "JAN",
+                        value: Number(data[0].FREIGHT_FROM_INDIA) + Number(data[0].FREIGHT_TO_INDIA)
+                    }, {
+                        group: "FEB",
+                        value: Number(data[1].FREIGHT_FROM_INDIA) + Number(data[1].FREIGHT_TO_INDIA)
+                    }, {
+                        group: "MARCH",
+                        value: Number(data[2].FREIGHT_FROM_INDIA) + Number(data[2].FREIGHT_TO_INDIA)
+                    }];
+
+                    var data2 = [{
+                        group: "APR",
+                        value: Number(data[3].FREIGHT_FROM_INDIA) + Number(data[3].FREIGHT_TO_INDIA)
+                    }, {
+                        group: "MAY",
+                        value: Number(data[4].FREIGHT_FROM_INDIA) + Number(data[4].FREIGHT_TO_INDIA)
+                    }, {
+                        group: "JUNE",
+                        value: Number(data[5].FREIGHT_FROM_INDIA) + Number(data[5].FREIGHT_TO_INDIA)
+                    }];
+
+                    var data3 = [{
+                        group: "JULY",
+                        value: Number(data[6].FREIGHT_FROM_INDIA) + Number(data[6].FREIGHT_TO_INDIA)
+                    }, {
+                        group: "AUGUST",
+                        value: Number(data[7].FREIGHT_FROM_INDIA) + Number(data[7].FREIGHT_TO_INDIA)
+                    }, {
+                        group: "SEPTEMBER",
+                        value: Number(data[8].FREIGHT_FROM_INDIA) + Number(data[8].FREIGHT_TO_INDIA)
+                    }];
+
+                    var data4 = [{
+                        group: "OCTOBER",
+                        value: Number(data[9].FREIGHT_FROM_INDIA) + Number(data[9].FREIGHT_TO_INDIA)
+                    }, {
+                        group: "NOVEMBER",
+                        value: Number(data[10].FREIGHT_FROM_INDIA) + Number(data[10].FREIGHT_TO_INDIA)
+                    }, {
+                        group: "DECEMBER",
+                        value: Number(data[11].FREIGHT_FROM_INDIA) + Number(data[11].FREIGHT_TO_INDIA)
+                    }];
+
+                    var margin = {
+                            top: 30,
+                            right: 30,
+                            bottom: 70,
+                            left: 100
+                        },
+                        width = 900 - margin.left - margin.right,
+                        height = 700;
+
+                    // append the svg object to the body of the page
+                    var svg = d3.select("#bar_chart_1")
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom - 25)
+                        .append("g")
+                        .attr("transform",
+                            "translate(" + margin.left + "," + margin.top + ")");
+
+                    var div = d3.select('#bar_chart_1').append('div')
+                        .attr('class', 'tooltip1')
+                        .style('display', 'none');
+
+                    svg.append("text")
+                        .attr("x",400)
+                        .attr("y",15)
+                        .attr("text-anchor","middle")
+                        .style("font-size","21px")
+                        .style("text-decoration","bold")
+                        .style("font-weight","bold")
+                        .text("Freight vs Months")
+
+                    // X axis
+                    var x = d3.scaleBand()
+                        .range([0, width])
+                        .padding(0.45);
+                    var xAxis = svg.append("g")
+                        .attr("transform", "translate(0," + height + ")")
+
+                    // Initialize the Y axis
+                    var y = d3.scaleLinear()
+                        .range([height, 0]);
+                    var yAxis = svg.append("g")
+                        .attr("class", "myYaxis")
+
+                    // A function that create / update the plot for a given variable:
+                    function update1(dataa, color) {
+
+                        // Update the X axis
+                        x.domain(dataa.map(function(d) {
+                            return d.group;
+                        }))
+                        xAxis.call(d3.axisBottom(x))
+
+                        // Update the Y axis
+                        y.domain([0, d3.max(dataa, function(d) {
+                            return d.value + 40000
+                        })]);
+                        yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+                        var u = svg.selectAll("rect")
+                            .data(dataa)
+
+                        u
+                            .enter()
+                            .append("rect")
+                            .merge(u)
+                            .on('mouseover', function(d) {
+                                div.style('display', 'inline');
+                            })
+                            .on('mousemove', function(d) {
+                                var d = d3.select(this).data()[0]
+                                div
+                                    .html("<strong>Month: </strong>" + d.group + "<br/><br/><strong>FREIGHT: </strong>" + d.value)
+                                    .style('left', (d3.event.pageX - 34) + 'px')
+                                    .style('top', (d3.event.pageY - 50) + 'px');
+                            })
+                            .on('mouseout', function(d) {
+                                div.style('display', 'none');
+                            })
+                            .transition()
+                            .duration(1500)
+                            .attr("x", function(d) {
+                                return x(d.group);
+                            })
+                            .attr("y", function(d) {
+                                return y(d.value);
+                            })
+                            .attr("width", 115)
+                            .attr("height", function(d) {
+                                return height - y(d.value);
+                            })
+                            .attr("fill", color)
+
+                    }
+
+                    var data5 = [{
+                        group2: "JAN",
+                        value2: Number(data[12].FREIGHT_FROM_INDIA) + Number(data[12].FREIGHT_TO_INDIA)
+                    }, {
+                        group2: "FEB",
+                        value2: Number(data[13].FREIGHT_FROM_INDIA) + Number(data[13].FREIGHT_TO_INDIA)
+                    }, {
+                        group2: "MARCH",
+                        value2: Number(data[14].FREIGHT_FROM_INDIA) + Number(data[14].FREIGHT_TO_INDIA)
+                    }];
+
+                    var data6 = [{
+                        group2: "APR",
+                        value2: Number(data[15].FREIGHT_FROM_INDIA) + Number(data[15].FREIGHT_TO_INDIA)
+                    }, {
+                        group2: "MAY",
+                        value2: Number(data[16].FREIGHT_FROM_INDIA) + Number(data[16].FREIGHT_TO_INDIA)
+                    }, {
+                        group2: "JUNE",
+                        value2: Number(data[17].FREIGHT_FROM_INDIA) + Number(data[17].FREIGHT_TO_INDIA)
+                    }];
+
+                    var data7 = [{
+                        group2: "JULY",
+                        value2: Number(data[18].FREIGHT_FROM_INDIA) + Number(data[18].FREIGHT_TO_INDIA)
+                    }, {
+                        group2: "AUGUST",
+                        value2: Number(data[19].FREIGHT_FROM_INDIA) + Number(data[19].FREIGHT_TO_INDIA)
+                    }, {
+                        group2: "SEPTEMBER",
+                        value2: Number(data[20].FREIGHT_FROM_INDIA) + Number(data[20].FREIGHT_TO_INDIA)
+                    }];
+
+                    var data8 = [{
+                        group2: "OCTOBER",
+                        value2: Number(data[21].FREIGHT_FROM_INDIA) + Number(data[21].FREIGHT_TO_INDIA)
+                    }, {
+                        group2: "NOVEMBER",
+                        value2: Number(data[22].FREIGHT_FROM_INDIA) + Number(data[22].FREIGHT_TO_INDIA)
+                    }, {
+                        group2: "DECEMBER",
+                        value2: Number(data[23].FREIGHT_FROM_INDIA) + Number(data[23].FREIGHT_TO_INDIA)
+                    }];
+
+                    var svg2 = d3.select("#bar_chart_2")
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom - 25)
+                        .append("g")
+                        .attr("transform",
+                            "translate(" + margin.left + "," + margin.top + ")");
+
+                    var div = d3.select('#bar_chart_2').append('div')
+                        .attr('class', 'tooltip1')
+                        .style('display', 'none');
+
+                    svg2.append("text")
+                        .attr("x",400)
+                        .attr("y",15)
+                        .attr("text-anchor","middle")
+                        .style("font-size","21px")
+                        .style("font-weight","bold")
+                        .text("Freight vs Months")
+
+                    // X axis
+                    var x2 = d3.scaleBand()
+                        .range([0, width])
+                        .padding(0.45);
+                    var xAxis2 = svg2.append("g")
+                        .attr("transform", "translate(0," + height + ")")
+
+                    // Initialize the Y axis
+                    var y2 = d3.scaleLinear()
+                        .range([height, 0]);
+                    var yAxis2 = svg2.append("g")
+                        .attr("class", "myYaxis")
+
+                    // A function that create / update the plot for a given variable:
+                    function update2(dataa, color) {
+
+                        // Update the X axis
+                        x2.domain(dataa.map(function(d) {
+                            return d.group2;
+                        }))
+                        xAxis2.call(d3.axisBottom(x2))
+
+                        // Update the Y axis
+                        y2.domain([0, d3.max(dataa, function(d) {
+                            return d.value2 + 50000
+                        })]);
+                        yAxis2.transition().duration(1000).call(d3.axisLeft(y2));
+
+                        var v = svg2.selectAll("rect")
+                            .data(dataa)
+
+                        v
+                            .enter()
+                            .append("rect")
+                            .merge(v)
+
+                        .on('mouseover', function(d) {
+                            div.style('display', 'inline');
+                        })
+
+                        .on('mousemove', function(d) {
+                            var d = d3.select(this).data()[0]
+                            div
+                                .html("<strong>Month: </strong>" + d.group2 + "<br/><br/><strong>FREIGHT: </strong>" + d.value2)
+                                .style('left', (d3.event.pageX - 34) + 'px')
+                                .style('top', (d3.event.pageY - 50) + 'px');
+                        })
+
+                        .on('mouseout', function(d) {
+                            div.style('display', 'none');
+                        })
+
+                        .transition()
+                            .duration(1500)
+                            .attr("x", function(d) {
+                                return x2(d.group2);
+                            })
+                            .attr("y", function(d) {
+                                return y2(d.value2);
+                            })
+                            .attr("width", 115)
+                            .attr("height", function(d) {
+                                return height - y2(d.value2);
+                            })
+                            .attr("fill", color)
+                    }
+
+                    // Initialize the plot with the first dataset
+                    update1(data1, 'blue');
+                    update2(data5, 'lime');
+
+                    d3.select("#btn1").on("click", function() {
+                        update1(data1, 'blue');
+                        update2(data5, 'lime');
+                    })
+                    d3.select("#btn2").on("click", function() {
+                        update1(data2, '#b20238');
+                        update2(data6, '#097770');
+                    })
+                    d3.select("#btn3").on("click", function() {
+                        update1(data3, 'blueviolet');
+                        update2(data7, '#fdbaf8');
+                    })
+                    d3.select("#btn4").on("click", function() {
+                        update1(data4, 'palevioletred');
+                        update2(data8, '#ffe268');
+                    })
+
+                });
+            </script>
+
+        </div>
+
+        <div class="tab-pane fade" id="chart_2" role="tabpanel" aria-labelledby="2nd-tab">
+
+          <h3 style="margin-top: 10px; text-align: center;">
+                MonthWise Comparison Of Data
+            </h3>
+
+            <div id="chart_bar" style="display: inline-block; height: 500px;"></div>
+
+            <div style="display: inline-block; position: absolute;">
+                <button onclick="updatepassenger()" class="btn btn-sm btn-info" style="margin-left:50px;">PASSENGER</button>
+                <button onclick="updatefreight()" class="btn btn-sm btn-info" style="margin-left:25px;">FREIGHT</button>
+                <select id="selectButton" style="background-color: #eff8ff; margin-top: 10px; margin-bottom:10px; margin-left:20px;"></select>
+                <div id="my_dataviz" style="width:600px; margin-top:15px; margin-left: 25px;"></div>
+            </div>
+
+            <script type="text/javascript">
+                d3.csv("http://127.0.0.1:8887/Monthwise_Traffic_2k15-2k16.csv", function(data) {
+
+                    // d3.csv("https://raw.githubusercontent.com/HarsH304/d3_analysis/main/Monthwise_Traffic_2k15-2k16.csv", function(data) {
+                    console.log(data);
+
+                    google.charts.load('current', {
+                        'packages': ['corechart']
+                    });
+                    google.charts.setOnLoadCallback(drawChart);
+
+                    function drawChart() {
+                        function myFunction() {
+                            var x = [
+                                ['Month', 'Travellers_2015', 'Travellers_2016', {
+                                    role: 'style'
+                                }]
+                            ];
+                            for (var i = 0; i < 12; i++) {
+                                var travellers_2015 = Number(data[i].PASSENGERS_FROM_INDIA) + Number(data[i].PASSENGERS_TO_INDIA)
+                                var travellers_2016 = Number(data[i + 12].PASSENGERS_FROM_INDIA) + Number(data[i + 12].PASSENGERS_TO_INDIA)
+                                x.push([data[i].MONTH, travellers_2015, travellers_2016, 'stroke-width:0;stroke-color: white;']);
+                            }
+                            console.log(x);
+                            return x;
+                        }
+
+                        var dataarray = google.visualization.arrayToDataTable(
+                            myFunction(),
+                        );
+
+
+                        var options = {
+                            title: "Month wise Travellers",
+                            bar: {
+                                groupWidth: "60%"
+                            },
+                            legend: {
+                                position: 'top',
+                                maxLines: 3
+                            },
+                            width: "975",
+                            height: "800",
+                            left: 0,
+                            backgroundColor:'#eff8ff',
+                        };
+
+                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_bar'));
+                        chart.draw(dataarray, options);
+                    }
+                });
+            </script>
+
+            <script>
+                var allGroup = 0;
+                d3.csv("http://127.0.0.1:8887/airlineline.csv", function(data) {
+                    // d3.csv("https://raw.githubusercontent.com/js164/airlinetraffic/main/airlineline.csv", function(data) {
+                    allGroup = d3.map(data, function(d) {
+                        return (d.AIRLINE_NAME)
+                    }).keys()
+                    d3.select("#selectButton")
+                        .selectAll('myOptions')
+                        .data(allGroup)
+                        .enter()
+                        .append('option')
+                        .text(function(d) {
+                            return d;
+                        })
+                        .attr("value", function(d) {
+                            return d;
+                        })
+                });
+
+                var margin = {
+                        top: 10,
+                        right: 30,
+                        bottom: 30,
+                        left: 70
+                    },
+                    width = 760 - margin.left - margin.right,
+                    height = 600 - margin.top - margin.bottom;
+
+                var svg = d3.select("#my_dataviz")
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right + 150)
+                    .attr("height", height + margin.top + margin.bottom + 50)
+                    .append("g")
+                    .attr("transform",
+                        "translate(" + margin.left + "," + margin.top + ")");
+
+                var x = d3.scaleLinear()
+                    .domain([1, 12])
+                    .range([0, width]);
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x).ticks(12));
+
+                var y = d3.scaleLinear()
+                    .range([height, 0]);
+
+                var yAxis = svg.append("g")
+                    .attr("class", "myYaxis")
+
+                var line1 = svg
+                    .append('g')
+                    .append("path")
+                    .attr("stroke", "blue")
+                    .style("stroke-width", 4)
+                    .style("fill", "none")
+
+                var line2 = svg
+                    .append('g')
+                    .append("path")
+                    .attr("stroke", "red")
+                    .style("stroke-width", 4)
+                    .style("fill", "none")
+
+                svg.append("text")
+                    .attr("text-anchor", "end")
+                    .attr("x", width - 350)
+                    .attr("y", height + margin.top + 25)
+                    .text("MONTHS");
+
+                var label3 = svg.append("text")
+                    .attr("text-anchor", "end")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", -margin.left+11)
+                    .attr("x", -margin.top - 200)
+                    .text("PASSENGERS")
+
+                svg.append("circle").attr("cx", width - 150).attr("cy", height + 45).attr("r", 6).style("fill", "red")
+                svg.append("circle").attr("cx", width - 150).attr("cy", height + 65).attr("r", 6).style("fill", "blue")
+                var label1 = svg.append("text").attr("x", width - 135).attr("y", height + 45).text("PASSENGER_FROM_INDIA").style("font-size", "15px").attr("alignment-baseline", "middle")
+                var label2 = svg.append("text").attr("x", width - 135).attr("y", height + 65).text("PASSENGER_TO_INDIA").style("font-size", "15px").attr("alignment-baseline", "middle")
+
+
+                function updatepassenger() {
+
+                    d3.selectAll("line1").remove();
+                    d3.selectAll("line2").remove();
+
+                    label1.text("PASSENGERS_FROM_INDIA");
+                    label2.text("PASSENGERS_TO_INDIA");
+                    label3.text("PASSENGERS");
+
+                    d3.csv("http://127.0.0.1:8887/airlineline.csv", function(data) {
+
+                        // d3.csv("https://raw.githubusercontent.com/js164/airlinetraffic/main/airlineline.csv", function(data) {
+
+
+                        function update(selectedGroup) {
+                            var dataFilter = data.filter(function(d) {
+                                return d.AIRLINE_NAME == selectedGroup
+                            })
+
+                            y.domain([0, ((d3.max(dataFilter, function(d) {
+                                var val = ((Math.max(Number(d.PASSENGER_TO_INDIA), Number(d.PASSENGERS_FROM_INDIA))) * 1.2)
+                                return val
+                            })))]);
+                            yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+                            line1
+                                .datum(dataFilter)
+                                .transition()
+                                .duration(1000)
+                                .attr("d", d3.line()
+                                    .x(function(d) {
+                                        return x(d.MONTH_NO)
+                                    })
+                                    .y(function(d) {
+                                        return y(+d.PASSENGER_TO_INDIA)
+                                    })
+                                )
+                                .attr("stroke", "blue")
+
+                            line2
+                                .datum(dataFilter)
+                                .transition()
+                                .duration(1000)
+                                .attr("d", d3.line()
+                                    .x(function(d) {
+                                        return x(d.MONTH_NO)
+                                    })
+                                    .y(function(d) {
+                                        return y(+d.PASSENGERS_FROM_INDIA)
+                                    })
+                                )
+                                .attr("stroke", "red")
+                        }
+                        var initval = document.getElementById("selectButton").value;
+                        update(initval)
+
+                        d3.select("#selectButton").on("change", function(d) {
+                            var selectedOption = d3.select(this).property("value")
+                            update(selectedOption)
+                        })
+                    })
+                }
+
+                function updatefreight() {
+
+                    d3.selectAll("line1").remove();
+                    d3.selectAll("line2").remove();
+
+                    label1.text("FREIGHT_FROM_INDIA");
+                    label2.text("FREIGHT_TO_INDIA");
+                    label3.text("FREIGHT")
+
+                    d3.csv("http://127.0.0.1:8887/airlineline.csv", function(data) {
+
+                        // d3.csv("https://raw.githubusercontent.com/js164/airlinetraffic/main/airlineline.csv", function(data) {
+
+                        function update(selectedGroup) {
+                            var dataFilter = data.filter(function(d) {
+                                return d.AIRLINE_NAME == selectedGroup
+                            })
+
+                            y.domain([0, ((d3.max(dataFilter, function(d) {
+                                var val = ((Math.max(Number(d.FREIGHT_TO_INDIA), Number(d.FREIGHT_FROM_INDIA))) * 1.2)
+                                return val
+                            })))]);
+                            yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+                            line1
+                                .datum(dataFilter)
+                                .transition()
+                                .duration(1000)
+                                .attr("d", d3.line()
+                                    .x(function(d) {
+                                        return x(d.MONTH_NO)
+                                    })
+                                    .y(function(d) {
+                                        return y(+d.FREIGHT_TO_INDIA)
+                                    })
+                                )
+
+
+                            line2
+                                .datum(dataFilter)
+                                .transition()
+                                .duration(1000)
+                                .attr("d", d3.line()
+                                    .x(function(d) {
+                                        return x(d.MONTH_NO)
+                                    })
+                                    .y(function(d) {
+                                        return y(+d.FREIGHT_FROM_INDIA)
+                                    })
+                                )
+                        }
+
+                        var initval = document.getElementById("selectButton").value;
+                        update(initval)
+
+                        d3.select("#selectButton").on("change", function(d) {
+                            var selectedOption = d3.select(this).property("value")
+                            update(selectedOption)
+                        })
+
+                    })
+                }
+
+                updatepassenger()
+            </script>
+
+        </div>
+
+        <div class="tab-pane fade" id="chart_3" role="tabpanel" aria-labelledby="3rd-tab">
+
+            <h3 style="margin-top: 10px; text-align: center;">
+                  Country Wise Travellers
+              </h3>
+
+            <div id="regions_div" style="width: 1000px; height: 650px; display: inline-block;margin-top: 80px; margin-left: 25px;"></div>
+            <div id="country_bar" style="width: 500px; position:absolute;display: inline-block;left:44%;"></div>
+
+            <script type="text/javascript">
+                d3.csv("http://127.0.0.1:8887/countrywise.csv", function(data) {
+                    google.charts.load("current", {
+                        packages: ["corechart"]
+                    });
+                    google.charts.load('current', {
+                        'packages': ['geochart'],
+                        'mapsApiKey': 'AIzaSyCEbTyTcxqu_8NrfyZB1KaZ5yWNQY_Yihs'
+                    });
+                    google.charts.setOnLoadCallback(drawRegionsMap);
+
+                    function drawRegionsMap() {
+                        function myFunction() {
+                            var x = [
+                                ['Country', 'TRAVELLERS']
+                            ];
+                            for (var i = 0; i < 54; i++) {
+                                var travellers = Number(data[i].PASSENGERS_FROM_INDIA) + Number(data[i].PASSENGERS_TO_INDIA)
+                                x.push([data[i].COUNTRY_NAME, travellers]);
+                            }
+                            console.log(x);
+                            return x;
+                        }
+
+                        var dataarray = google.visualization.arrayToDataTable(
+                            myFunction(),
+                        );
+
+                        var options = {
+                            colorAxis: {
+                                colors: ['cyan', 'red']
+                            },
+                            top:25,
+                            width: 825,
+                            height: 650,
+                            backgroundColor:'#eff8ff',
+                        };
+
+                        var chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
+                        chart.draw(dataarray, options);
+
+                        var view = new google.visualization.DataView(dataarray);
+                        view.setRows(dataarray.getFilteredRows([{
+                            column: 1,
+                            minValue: 2000000
+                        }]));
+                        var options1 = {
+                            title: "Top 8 Countrys",
+                            width: 925,
+                            height: 750,
+                            backgroundColor:'#eff8ff',
+                        };
+                        var chart_Countrybar = new google.visualization.BarChart(document.getElementById("country_bar"));
+                        chart_Countrybar.draw(view, options1);
+                    }
+                });
+            </script>
+
+        </div>
+
+        <div class="tab-pane fade" id="chart_4" role="tabpanel" aria-labelledby="4th-tab">
+
+          <div class="titletext" style="margin-top: 10px;text-align: center;">
+                <h1>Select Cities</h1>
+            </div>
+            <div style="text-align: center;">
+                <label for="PieButton2" style="font-size: 25px; margin-top: 10px;">City1:</label>
+                <select id="PieButton2" style="background-color: #eff8ff;margin-bottom: 17px; margin-top: 15px; margin-left:10px; "></select>
+                <label for="PieButton1" style="font-size: 25px; margin-top: 10px; margin-left:20px;">City2:</label>
+                <select id="PieButton1" style="background-color: #eff8ff;margin-bottom: 17px; margin-top: 15px; margin-left:10px; "></select>
+            </div>
+
+          <div id="piechart_3d0" style="position: absolute; left: 0px; top: 250px;" style="width: 600px; height: 300px;"></div>
+          <div id="piechart_3d1" style="position: absolute; left: 0px; top: 600px;" style="width: 600px; height: 300px;"></div>
+          <div id="piechart_3d2" style="position: absolute; left: 475px; top: 250px;" style="width: 600px; height: 300px;"></div>
+          <div id="piechart_3d3" style="position: absolute; left: 475px; top: 600px;" style="width: 600px; height: 300px;"></div>
+          <div id="piechart_3d4" style="position: absolute; left: 950px; top: 250px;" style="width: 600px; height: 300px;"></div>
+          <div id="piechart_3d5" style="position: absolute; left: 950px; top: 600px;" style="width: 600px; height: 300px;"></div>
+          <div id="piechart_3d6" style="position: absolute; left: 1425px; top: 250px;" style="width: 600px; height: 300px;"></div>
+          <div id="piechart_3d7" style="position: absolute; left: 1425px; top: 600px;" style="width: 600px; height: 00px;"></div>
+
+            <script type="text/javascript">
+                var CITY1 = 0;
+                var CITY2 = 0;
+                var City1;
+                var City2 = "AHMEDABAD";
+                var Quarter1 = "Q1";
+                var Quarter2 = "Q1";
+                var selectedOption1;
+                var selectedOption2;
+                d3.csv("http://127.0.0.1:8887/citytocity.csv", function(data) {
+                    CITY2 = d3.map(data, function(d) {
+                        return (d.CITY2)
+                    }).keys()
+                    d3.select("#PieButton2")
+                        .selectAll('myOptions')
+                        .data(CITY2)
+                        .enter()
+                        .append('option')
+                        .text(function(d) {
+                            return d;
+                        })
+                        .attr("value", function(d) {
+                            return d;
+                        })
+
+                    CITY1 = d3.map(data, function(d, i) {
+                        if (d.CITY2 == City2) {
+                            return (d.CITY1)
+                        }
+                    }).keys()
+                    CITY1 = CITY1.filter(function(d, i) {
+                        console.log(d);
+                        return d != "undefined"
+                    })
+                    console.log(CITY1);
+                    d3.select("#PieButton1")
+                        .selectAll('myOptions')
+                        .data(CITY1)
+                        .enter()
+                        .append('option')
+                        .text(function(d) {
+                            return d;
+                        })
+                        .attr("value", function(d) {
+                            return d;
+                        })
+                    City1 = d3.select("#PieButton1").property("value")
+                });
+
+                d3.csv("http://127.0.0.1:8887/citytocity.csv", function(data) {
+                    google.charts.load("current", {
+                        packages: ["corechart"]
+                    });
+                    google.charts.setOnLoadCallback(drawChart);
+
+                    function drawChart() {
+
+                        function myFunction0() {
+                            var x = [
+                                ['CITY', 'Data']
+                            ];
+                            for (var i = 0; i < 1300; i++) {
+                                if (data[i].QUARTER === Quarter1 && data[i].CITY1 === City1 && data[i].CITY2 === City2) {
+                                    x.push(["PASSENGERS FROM \n" + data[i].CITY1 + " To \n" + data[i].CITY2, Number(data[i].PASSENGERS_FROM_CITY1_TO_CITY2)]);
+                                    x.push(["PASSENGERS FROM \n" + data[i].CITY2 + " To \n" + data[i].CITY1, Number(data[i].PASSENGERS_FROM_CITY2_TO_CITY1)]);
+                                }
+                            }
+                            if (Quarter1 === "Q1") {
+                                Quarter1 = "Q2";
+                            } else if (Quarter1 === "Q2") {
+                                Quarter1 = "Q3";
+                            } else if (Quarter1 === "Q3") {
+                                Quarter1 = "Q4";
+                            } else if (Quarter1 === "Q4") {
+                                Quarter1 = "Q1";
+                            }
+                            return x;
+                        }
+
+                        var dataarray0 = google.visualization.arrayToDataTable(
+                            myFunction0(),
+                        );
+                        var dataarray2 = google.visualization.arrayToDataTable(
+                            myFunction0(),
+                        );
+                        var dataarray4 = google.visualization.arrayToDataTable(
+                            myFunction0(),
+                        );
+                        var dataarray6 = google.visualization.arrayToDataTable(
+                            myFunction0(),
+                        );
+
+                        function myFunction1() {
+                            var x = [
+                                ['CITY', 'Data']
+                            ];
+                            for (var i = 0; i < 1300; i++) {
+                                if (data[i].QUARTER === Quarter2 && data[i].CITY1 === City1 && data[i].CITY2 === City2) {
+                                    x.push(["FREIGHT FROM \n" + data[i].CITY1 + " To \n" + data[i].CITY2, Number(data[i].FREIGHT_FROM_CITY1_TO_CITY2)]);
+                                    x.push(["FREIGHT FROM \n" + data[i].CITY2 + " To \n" + data[i].CITY1, Number(data[i].FREIGHT_FROM_CITY2_TO_CITY1)]);
+                                }
+                            }
+                            if (Quarter2 === "Q1") {
+                                Quarter2 = "Q2";
+                            } else if (Quarter2 === "Q2") {
+                                Quarter2 = "Q3";
+                            } else if (Quarter2 === "Q3") {
+                                Quarter2 = "Q4";
+                            } else if (Quarter2 === "Q4") {
+                                Quarter2 = "Q1";
+                            }
+                            console.log(x)
+                            return x;
+                        }
+
+                        var dataarray1 = google.visualization.arrayToDataTable(
+                            myFunction1(),
+                        );
+                        var dataarray3 = google.visualization.arrayToDataTable(
+                            myFunction1(),
+                        );
+                        var dataarray5 = google.visualization.arrayToDataTable(
+                            myFunction1(),
+                        );
+                        var dataarray7 = google.visualization.arrayToDataTable(
+                            myFunction1(),
+                        );
+
+                        var options0 = {
+                            title: 'PASSENGERS details for Q1',
+                            is3D: true,
+                            width: 500,
+                            height: 300,
+                            backgroundColor:'#eff8ff',
+                        };
+                        var options1 = {
+                            title: 'FREIGHT details for Q1',
+                            is3D: true,
+                            width: 500,
+                            height: 300,
+                            backgroundColor:'#eff8ff',
+                        };
+                        var options2 = {
+                            title: 'PASSENGERS details for Q2',
+                            is3D: true,
+                            width: 500,
+                            height: 300,
+                            backgroundColor:'#eff8ff',
+                        };
+                        var options3 = {
+                            title: 'FREIGHT details for Q2',
+                            is3D: true,
+                            width: 500,
+                            height: 300,
+                            backgroundColor:'#eff8ff',
+                        };
+                        var options4 = {
+                            title: 'PASSENGERS details for Q3',
+                            is3D: true,
+                            width: 500,
+                            height: 300,
+                            backgroundColor:'#eff8ff',
+                        };
+                        var options5 = {
+                            title: 'FREIGHT details for Q3',
+                            is3D: true,
+                            width: 500,
+                            height: 300,
+                            backgroundColor:'#eff8ff',
+                        };
+                        var options6 = {
+                            title: 'PASSENGERS details for Q4',
+                            is3D: true,
+                            width: 490,
+                            height: 300,
+                            backgroundColor:'#eff8ff',
+                        };
+                        var options7 = {
+                            title: 'FREIGHT details for Q4',
+                            is3D: true,
+                            width: 490,
+                            height: 300,
+                            backgroundColor:'#eff8ff',
+                        };
+
+
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d0'));
+                        chart.draw(dataarray0, options0);
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d1'));
+                        chart.draw(dataarray1, options1);
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d2'));
+                        chart.draw(dataarray2, options2);
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d3'));
+                        chart.draw(dataarray3, options3);
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d4'));
+                        chart.draw(dataarray4, options4);
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d5'));
+                        chart.draw(dataarray5, options5);
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d6'));
+                        chart.draw(dataarray6, options6);
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart_3d7'));
+                        chart.draw(dataarray7, options7);
+                    }
+                    d3.select("#PieButton1").on("change", function(d) {
+                        City1 = d3.select(this).property("value")
+                        drawChart();
+                    })
+                    d3.select("#PieButton2").on("change", function(d) {
+                        City2 = d3.select(this).property("value")
+                        document.getElementById("PieButton1").innerHTML = null;
+                        CITY1 = d3.map(data, function(d, i) {
+                            if (d.CITY2 == City2) {
+                                return (d.CITY1)
+                            }
+                        }).keys()
+                        CITY1 = CITY1.filter(function(d, i) {
+                            console.log(d);
+                            return d != "undefined"
+                        })
+                        console.log(CITY1);
+                        d3.select("#PieButton1")
+                            .selectAll('myOptions')
+                            .data(CITY1)
+                            .enter()
+                            .append('option')
+                            .text(function(d) {
+                                return d;
+                            })
+                            .attr("value", function(d) {
+                                return d;
+                            })
+                        City1 = d3.select("#PieButton1").property("value")
+
+                        drawChart();
+                    })
+                });
+            </script>
+
+        </div>
+
+        <div class="tab-pane fade" id="chart_5" role="tabpanel" aria-labelledby="5th-tab">
+
+          <h3 style="text-align: center; margin-top: 10px;">
+                Passengers Travelled To India For Top 5 Domestic And Foreign Airlines
+            </h3>
+
+            <div id="AreaChart_1" style="display: inline-block;"></div>
+            <div id="AreaChart_2" style="display: inline-block;"></div>
+
+            <script>
+                var marginArea = {
+                        top: 10,
+                        right: 30,
+                        bottom: 30,
+                        left: 70
+                    },
+                    width = 800,
+                    height = 800;
+
+                // append the svg object to the body of the page
+                var svgArea1 = d3.select("#AreaChart_1")
+                    .append("svg")
+                    .attr("width", width + marginArea.left + marginArea.right)
+                    .attr("height", height + marginArea.top + marginArea.bottom)
+                    .append("g")
+                    .attr("transform",
+                        "translate(" + marginArea.left + "," + marginArea.top + ")");
+
+                d3.csv("http://127.0.0.1:8887/areadom2.csv", function(data) {
+
+                    // d3.csv("https://raw.githubusercontent.com/js164/airlinetraffic/main/areadom2.csv", function(data) {
+                    var x = d3.scaleBand()
+                        .domain(d3.map(data, function(d) {
+                            return d.AIRLINE_NAME;
+                        }).keys())
+                        .range([0, 650])
+
+                    svgArea1.append("g")
+                        .attr("transform", "translate(0,650)")
+                        .call(d3.axisBottom(x))
+                        .selectAll("text")
+                        .style("text-anchor", "end")
+                        .attr("dx", "-.8em")
+                        .attr("dy", ".15em")
+                        .attr("transform", "rotate(-30)");
+
+                    var y = d3.scaleLinear()
+                        .domain([0, d3.max(data, function(d) {
+                            return +d.PASSENGERS_TO_INDIA;
+                        }) + 100000])
+                        .range([650, 0]);
+
+                    svgArea1.append("g")
+                        .attr("transform", "translate(-5,0)")
+                        .call(d3.axisLeft(y));
+
+                    var div = d3.select('#AreaChart_1').append('div')
+                        .attr('class', 'tooltip1')
+                        .style('display', 'none');
+
+                    svgArea1.append("text")
+                        .attr("x",160)
+                        .attr("y",18)
+                        .attr("text-anchor","middle")
+                        .style("font-size","21px")
+                        .style("font-weight","bold")
+                        .text("Passengers vs Domestic Flight")
+
+                    svgArea1.append("path")
+                        .datum(data)
+                        .attr("fill", "#69b3a2")
+                        .attr("fill-opacity", .3)
+                        .attr("stroke", "none")
+                        .attr("d", d3.area()
+                            .x(function(d) {
+                                return x(d.AIRLINE_NAME)
+                            })
+                            .y0(650)
+                            .y1(function(d) {
+                                return y(d.PASSENGERS_TO_INDIA)
+                            })
+                        )
+                        .attr("transform", "translate(65,0)")
+
+                    // Add the line
+                    svgArea1.append("path")
+                        .datum(data)
+                        .attr("fill", "none")
+                        .attr("stroke", "#69b3a2")
+                        .attr("stroke-width", 4)
+                        .attr("d", d3.line()
+                            .x(function(d) {
+                                return x(d.AIRLINE_NAME)
+                            })
+                            .y(function(d) {
+                                return y(d.PASSENGERS_TO_INDIA)
+                            })
+                        )
+                        .attr("transform", "translate(65,0)")
+
+
+                    // Add the line
+                    svgArea1.selectAll("myCircles")
+                        .data(data)
+                        .enter()
+                        .append("circle")
+                        .attr("fill", "red")
+                        .attr("stroke", "none")
+                        .attr("cx", function(d) {
+                            return x(d.AIRLINE_NAME)
+                        })
+                        .attr("cy", function(d) {
+                            return y(d.PASSENGERS_TO_INDIA)
+                        })
+                        .attr("r", 3)
+                        .attr("transform", "translate(65,0)")
+                        .on("mouseover", function(d) {
+                            div.style('display', 'inline');
+                        })
+                        .on("mouseout", function(d) {
+                            div.style('display', 'none');
+                        })
+                        .on("mousemove", function(d) {
+                            var d = d3.select(this).data()[0]
+                            div
+                                .html("<strong>AIRLINE NAME: </strong>" + d.AIRLINE_NAME + "<br/><br/><strong>PASSENGER TO INDIA: </strong>" + d.PASSENGERS_TO_INDIA)
+                                .style('left', (d3.event.pageX - 34) + 'px')
+                                .style('top', (d3.event.pageY - 25) + 'px');
+                        })
+
+                })
+
+                var svgArea2 = d3.select("#AreaChart_2")
+                    .append("svg")
+                    .attr("width", width + marginArea.left + marginArea.right)
+                    .attr("height", height + marginArea.top + marginArea.bottom)
+                    .append("g")
+                    .attr("transform",
+                        "translate(" + marginArea.left + "," + marginArea.top + ")");
+
+                d3.csv("http://127.0.0.1:8887/areaint2.csv", function(data) {
+
+                    // d3.csv("https://raw.githubusercontent.com/js164/airlinetraffic/main/areaint2.csv", function(data) {
+                    var x = d3.scaleBand()
+                        .domain(d3.map(data, function(d) {
+                            return d.AIRLINE_NAME;
+                        }).keys())
+                        .range([0, 650])
+
+                    svgArea2.append("g")
+                        .attr("transform", "translate(0,650)")
+                        .call(d3.axisBottom(x))
+                        .selectAll("text")
+                        .style("text-anchor", "end")
+                        .attr("dx", "-.8em")
+                        .attr("dy", ".15em")
+                        .attr("transform", "rotate(-30)");
+
+                    var y = d3.scaleLinear()
+                        .domain([0, d3.max(data, function(d) {
+                            return +d.PASSENGERS_TO_INDIA;
+                        }) + 100000])
+                        .range([650, 0]);
+                    svgArea2.append("g")
+                        .attr("transform", "translate(-5,0)")
+                        .call(d3.axisLeft(y));
+
+                    var div = d3.select('#AreaChart_1').append('div')
+                        .attr('class', 'tooltip1')
+                        .style('display', 'none');
+
+                    svgArea2.append("text")
+                        .attr("x",400)
+                        .attr("y",25)
+                        .attr("text-anchor","middle")
+                        .style("font-size","21px")
+                        .style("font-weight","bold")
+                        .text("Passengers vs Foreign Flight")
+
+                    svgArea2.append("path")
+                        .datum(data)
+                        .attr("fill", "#69b3a2")
+                        .attr("fill-opacity", .3)
+                        .attr("stroke", "none")
+                        .attr("d", d3.area()
+                            .x(function(d) {
+                                return x(d.AIRLINE_NAME)
+                            })
+                            .y0(650)
+                            .y1(function(d) {
+                                return y(d.PASSENGERS_TO_INDIA)
+                            })
+                        )
+                        .attr("transform", "translate(65,0)")
+
+                    // Add the line
+                    svgArea2.append("path")
+                        .datum(data)
+                        .attr("fill", "none")
+                        .attr("stroke", "#69b3a2")
+                        .attr("stroke-width", 4)
+                        .attr("d", d3.line()
+                            .x(function(d) {
+                                return x(d.AIRLINE_NAME)
+                            })
+                            .y(function(d) {
+                                return y(d.PASSENGERS_TO_INDIA)
+                            })
+                        )
+                        .attr("transform", "translate(65,0)")
+
+
+                    // Add the line
+                    svgArea2.selectAll("myCircles")
+                        .data(data)
+                        .enter()
+                        .append("circle")
+                        .attr("fill", "red")
+                        .attr("stroke", "none")
+                        .attr("cx", function(d) {
+                            return x(d.AIRLINE_NAME)
+                        })
+                        .attr("cy", function(d) {
+                            return y(d.PASSENGERS_TO_INDIA)
+                        })
+                        .attr("r", 3)
+                        .attr("transform", "translate(65,0)")
+                        .on("mouseover", function(d) {
+                            div.style('display', 'inline');
+                        })
+                        .on("mouseout", function(d) {
+                            div.style('display', 'none');
+                        })
+                        .on("mousemove", function(d) {
+                            var d = d3.select(this).data()[0]
+                            div
+                                .html("<strong>AIRLINE NAME: </strong>" + d.AIRLINE_NAME + "<br/><br/><strong>PASSENGER TO INDIA: </strong>" + d.PASSENGERS_TO_INDIA)
+                                .style('left', (d3.event.pageX - 34) + 'px')
+                                .style('top', (d3.event.pageY - 25) + 'px');
+                        })
+
+
+                })
+            </script>
+
+        </div>
+
+        <div class="tab-pane fade" id="chart_6" role="tabpanel" aria-labelledby="6th-tab">
+
+          <h3 style="margin-top: 10px; text-align: center;">
+                Airline Comparison Using Circulr Bar Chart
+            </h3>
+
+            <div id="cirular_bar_1" style="display: inline-block;">
+                <h3 style="text-align:center; margin-top: 15px;">2015 AIRLINE NAME WISE TRAFFIC</h3>
+            </div>
+            <div id="cirular_bar_2" style="display: inline-block; margin-left:25px ;">
+                <h3 style="text-align:center;margin-top: 15px;">2016 AIRLINE NAME WISE TRAFFIC</h3>
+            </div>
+
+            <script>
+                // set the dimensions and margins of the graph
+                var margin = {
+                        top: 10,
+                        right: 0,
+                        bottom: 0,
+                        left: 0
+                    },
+                    width = 900 - margin.left - margin.right,
+                    height = 800,
+                    innerRadius = 100,
+                    outerRadius = 350;
+
+                // append the svg object
+                var svg = d3.select("#cirular_bar_1")
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(450,425)");
+
+
+                d3.csv("http://127.0.0.1:8887/2k15_Traffic1.csv", function(data) {
+
+                    // d3.csv("https://raw.githubusercontent.com/HarsH304/d3_analysis/main/2k15_Traffic.csv", function(data) {
+                    console.log(data);
+                    var Traffic = []
+                    for (var i = 0; i < data.length; i++) {
+                        Traffic.push(Number(data[i].PASSENGERS_FROM_INDIA) + Number(data[i].PASSENGERS_TO_INDIA));
+                    }
+
+                    console.log(Traffic);
+                    var maximum = Math.max.apply(Math, Traffic);;
+                    console.log(maximum);
+
+                    // Scales
+                    var x = d3.scaleBand()
+                        .range([0, 2 * Math.PI]) // X axis goes from 0 to 2pi = all around the circle. If I stop at 1Pi, it will be around a half circle
+                        .align(0) // This does nothing
+                        .domain(data.map(function(d) {
+                            return d.AIRLINE_NAME;
+                        })); // The domain of the X axis is the list of states.
+
+
+                    var y = d3.scaleRadial()
+                        .range([innerRadius, outerRadius]) // Domain will be define later.
+                        .domain([0, maximum]); // Domain of Y is from 0 to the max seen in the data
+
+                    var div = d3.select('#cirular_bar_1').append('div')
+                        .attr('class', 'tooltip1')
+                        .style('display', 'none');
+
+                    function mouseover() {
+                        div.style('display', 'inline');
+                    }
+
+                    function mousemove(d, i) {
+                        var d = d3.select(this).data()[0]
+                        div
+                            .html(d.AIRLINE_NAME + '<br/><br/>' + Traffic[i])
+                            .style('left', (d3.event.pageX - 34) + 'px')
+                            .style('top', (d3.event.pageY - 50) + 'px');
+                    }
+
+                    function mouseout() {
+                        div.style('display', 'none');
+                    }
+
+                    // Add the bars
+                    svg.append("g")
+                        .selectAll("path")
+                        .data(data)
+                        .enter()
+                        .append("path")
+                        .attr("fill", "mediumpurple")
+                        .attr("d", d3.arc() // imagine your doing a part of a donut plot
+                            .innerRadius(innerRadius)
+                            .outerRadius(function(d, i) {
+                                return y(Traffic[i]);
+                            })
+                            .startAngle(function(d) {
+                                return x(d.AIRLINE_NAME);
+                            })
+                            .endAngle(function(d) {
+                                return x(d.AIRLINE_NAME) + x.bandwidth();
+                            })
+                            .padAngle(0.02)
+                            .padRadius(innerRadius))
+                        .on('mouseover', mouseover)
+                        .on('mousemove', mousemove)
+                        .on('mouseout', mouseout);
+
+                    // Add the labels
+                    svg.append("g")
+                        .selectAll("g")
+                        .data(data)
+                        .enter()
+                        .append("g")
+                        .attr("text-anchor", function(d) {
+                            return (x(d.AIRLINE_NAME) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "end" : "start";
+                        })
+                        .attr("transform", function(d, i) {
+                            return "rotate(" + ((x(d.AIRLINE_NAME) + x.bandwidth() / 2) * 180 / Math.PI - 90) + ")" + "translate(" + (y(Traffic[i]) + 15) + ",0)";
+                        })
+
+                    .append("text")
+                        .text(function(d, i) {
+                            return (d.AIRLINE_NAME)
+                        })
+                        .attr("transform", function(d) {
+                            return (x(d.AIRLINE_NAME) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "rotate(180)" : "rotate(0)";
+                        })
+                        .style("font-size", "10px")
+                        .style("margin-left", "10px")
+                        .attr("alignment-baseline", "middle")
+
+                });
+
+                var margin2 = {
+                        top: 10,
+                        right: 0,
+                        bottom: 0,
+                        left: 0
+                    },
+                    width = 800 - margin.left - margin.right,
+                    height = 800,
+                    innerRadius = 100,
+                    outerRadius = 350;
+
+                var svg2 = d3.select("#cirular_bar_2")
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(450,425)");
+
+                d3.csv("http://127.0.0.1:8887/2k16_Traffic1.csv", function(data) {
+
+                    // d3.csv("https://raw.githubusercontent.com/HarsH304/d3_analysis/main/2k16_Traffic.csv", function(data) {
+
+                    var Traffic = []
+                    for (var i = 0; i < data.length; i++) {
+
+                        Traffic.push(Number(data[i].PASSENGER_FROM_INDIA) + Number(data[i].PASSENGER_TO_INDIA));
+                    }
+                    console.log(Traffic);
+                    var maximum = Math.max.apply(Math, Traffic);;
+                    console.log(maximum);
+
+                    // Scales
+                    var x = d3.scaleBand()
+                        .range([0, 2 * Math.PI]) // X axis goes from 0 to 2pi = all around the circle. If I stop at 1Pi, it will be around a half circle
+                        .align(0) // This does nothing
+                        .domain(data.map(function(d) {
+                            return d.AIRLINE_NAMES;
+                        })); // The domain of the X axis is the list of states.
+
+
+                    var y = d3.scaleRadial()
+                        .range([innerRadius, outerRadius]) // Domain will be define later.
+                        .domain([0, maximum]); // Domain of Y is from 0 to the max seen in the data
+
+                    var div = d3.select('#cirular_bar_2').append('div')
+                        .attr('class', 'tooltip1')
+                        .style('display', 'none');
+
+                    function mouseover() {
+                        div.style('display', 'inline');
+                    }
+
+                    function mousemove(d, i) {
+                        var d = d3.select(this).data()[0]
+                        div
+                            .html(d.AIRLINE_NAMES + '<br/><br/>' + Traffic[i])
+                            .style('left', (d3.event.pageX - 34) + 'px')
+                            .style('top', (d3.event.pageY - 50) + 'px');
+                    }
+
+                    function mouseout() {
+                        div.style('display', 'none');
+                    }
+
+                    // Add the bars
+                    svg2.append("g")
+                        .selectAll("path")
+                        .data(data)
+                        .enter()
+                        .append("path")
+                        .attr("fill", "LimeGreen")
+                        .attr("d", d3.arc() // imagine your doing a part of a donut plot
+                            .innerRadius(innerRadius)
+                            .outerRadius(function(d, i) {
+                                return y(Traffic[i]);
+                            })
+                            .startAngle(function(d) {
+                                return x(d.AIRLINE_NAMES);
+                            })
+                            .endAngle(function(d) {
+                                return x(d.AIRLINE_NAMES) + x.bandwidth();
+                            })
+                            .padAngle(0.02)
+                            .padRadius(innerRadius))
+                        .on('mouseover', mouseover)
+                        .on('mousemove', mousemove)
+                        .on('mouseout', mouseout);
+
+
+                    // Add the labels
+                    svg2.append("g")
+                        .selectAll("g")
+                        .data(data)
+                        .enter()
+                        .append("g")
+                        .attr("text-anchor", function(d) {
+                            return (x(d.AIRLINE_NAMES) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "end" : "start";
+                        })
+                        .attr("transform", function(d, i) {
+                            return "rotate(" + ((x(d.AIRLINE_NAMES) + x.bandwidth() / 2) * 180 / Math.PI - 90) + ")" + "translate(" + (y(Traffic[i]) + 15) + ",0)";
+                        })
+
+                    .append("text")
+                        .text(function(d, i) {
+                            return (d.AIRLINE_NAMES)
+                        })
+                        .attr("transform", function(d) {
+                            return (x(d.AIRLINE_NAMES) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "rotate(180)" : "rotate(0)";
+                        })
+                        .style("font-size", "10px")
+                        .style("margin-left", "10px")
+                        .attr("alignment-baseline", "middle")
+
+                });
+            </script>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
